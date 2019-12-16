@@ -29,7 +29,7 @@ func TestCountown(t *testing.T) {
 	wantCalls := 4
 
 	if spySleeper.Calls != wantCalls {
-		t.Errorf("\nNot enough calls to Sleep, got: %d, want: %d", spySleeper.Calls, wantCalls)
+		t.Errorf("\nNot enough calls to Sleep, want: %d, got: %d", wantCalls, spySleeper.Calls)
 	}
 
 }
