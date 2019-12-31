@@ -8,6 +8,7 @@ import (
 
 type PlayerStore interface {
 	GetPlayerScore(id string) (int, bool)
+	RecordPlayerScore(id string) int
 }
 
 type PlayerServer struct {
@@ -16,21 +17,26 @@ type PlayerServer struct {
 
 func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/player/")
-	score, ok := p.store.GetPlayerScore(id)
-
-	if !ok {
-		w.WriteHeader(http.StatusNotFound)
+	switch r.Method {
+	case http.MethodPost:
+		p.recordPlayerScore(w, id)
+	case http.MethodGet:
+		p.getPlayerScore(w, id)
 	}
-
-	fmt.Fprint(w, score)
 }
 
-func GetPlayerScore(id string) (string, bool) {
-	if id == "1" {
-		return "20", true
+func (p *PlayerServer) getPlayerScore(w http.ResponseWriter, id string) {
+	score, ok := p.store.GetPlayerScore(id)
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+		fmt.Fprint(w, score)
 	}
-	if id == "2" {
-		return "10", true
-	}
-	return "", false
+
+}
+
+func (p *PlayerServer) recordPlayerScore(w http.ResponseWriter, id string) {
+	score := p.store.RecordPlayerScore(id)
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprint(w, score)
 }

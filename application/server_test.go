@@ -16,7 +16,12 @@ func (s *StubPlayerStore) GetPlayerScore(id string) (int, bool) {
 	return score, ok
 }
 
-func TestGETPlayers(t *testing.T) {
+func (s *StubPlayerStore) RecordPlayerScore(id string) int {
+	s.scores[id]++
+	return s.scores[id]
+}
+
+func TestGETPlayerScore(t *testing.T) {
 	store := StubPlayerStore{
 		map[string]int{
 			"1": 20,
@@ -48,13 +53,21 @@ func TestGETPlayers(t *testing.T) {
 		request := newGetScoreRequest("3")
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
+		assertResponseStatus(t, http.StatusNotFound, response.Code)
+	})
+}
 
-		want := http.StatusNotFound
-		got := response.Code
+func TestPOSTPlayerScore(t *testing.T) {
+	store := StubPlayerStore{
+		map[string]int{},
+	}
+	server := &PlayerServer{&store}
 
-		if got != want {
-			t.Errorf("\nwant: %d, got: %d", want, got)
-		}
+	t.Run("returns accepted on POST", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodPost, "/players/3", nil)
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+		assertResponseStatus(t, http.StatusCreated, response.Code)
 	})
 }
 
