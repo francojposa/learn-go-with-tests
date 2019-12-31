@@ -11,10 +11,9 @@ type StubPlayerStore struct {
 	scores map[string]int
 }
 
-func (s *StubPlayerStore) GetPlayerScore(id string) int {
-	score := s.scores[id]
-	return score
-
+func (s *StubPlayerStore) GetPlayerScore(id string) (int, bool) {
+	score, ok := s.scores[id]
+	return score, ok
 }
 
 func TestGETPlayers(t *testing.T) {
@@ -32,10 +31,8 @@ func TestGETPlayers(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
-		want := "20"
-		got := response.Body.String()
-
-		assertResponseBody(t, want, got)
+		assertResponseStatus(t, response.Code, http.StatusOK)
+		assertResponseBody(t, response.Body.String(), "20")
 	})
 
 	t.Run("return's player 2's score", func(t *testing.T) {
@@ -43,10 +40,21 @@ func TestGETPlayers(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
-		want := "10"
-		got := response.Body.String()
-		assertResponseBody(t, want, got)
+		assertResponseStatus(t, response.Code, http.StatusOK)
+		assertResponseBody(t, response.Body.String(), "10")
+	})
 
+	t.Run("return 404 for player id not found", func(t *testing.T) {
+		request := newGetScoreRequest("3")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		want := http.StatusNotFound
+		got := response.Code
+
+		if got != want {
+			t.Errorf("\nwant: %d, got: %d", want, got)
+		}
 	})
 }
 
@@ -55,9 +63,16 @@ func newGetScoreRequest(id string) *http.Request {
 	return req
 }
 
+func assertResponseStatus(t *testing.T, want, got int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("\nincorrect http status\nwant: %d, got %d", want, got)
+	}
+}
+
 func assertResponseBody(t *testing.T, want, got string) {
 	t.Helper()
 	if got != want {
-		t.Errorf("\nwant: %q, got %q", want, got)
+		t.Errorf("\nincorrect response body\nwant: %q, got %q", want, got)
 	}
 }
