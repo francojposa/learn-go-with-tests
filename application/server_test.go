@@ -21,6 +21,21 @@ func (s *StubPlayerStore) RecordPlayerScore(id string) int {
 	return s.scores[id]
 }
 
+func TestRecordingWinsAndRetrievingThem(t *testing.T) {
+	server := &PlayerServer{NewInMemoryPlayerStore()}
+	player := "1"
+
+	server.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
+	server.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
+	server.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
+
+	response := httptest.NewRecorder()
+	server.ServeHTTP(response, newGetScoreRequest(player))
+	assertResponseStatus(t, response.Code, http.StatusOK)
+
+	assertResponseBody(t, response.Body.String(), "3")
+}
+
 func TestGETPlayerScore(t *testing.T) {
 	store := StubPlayerStore{
 		map[string]int{
@@ -73,6 +88,11 @@ func TestPOSTPlayerScore(t *testing.T) {
 
 func newGetScoreRequest(id string) *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/player/%s", id), nil)
+	return req
+}
+
+func newPostScoreRequest(id string) *http.Request {
+	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/player/%s", id), nil)
 	return req
 }
 
