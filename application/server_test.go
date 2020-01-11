@@ -79,7 +79,7 @@ func TestPOSTPlayerScore(t *testing.T) {
 	server := &PlayerServer{&store}
 
 	t.Run("returns accepted on POST", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodPost, "/players/3", nil)
+		request := newPostScoreRequest("1")
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 		assertResponseStatus(t, http.StatusCreated, response.Code)
@@ -87,12 +87,12 @@ func TestPOSTPlayerScore(t *testing.T) {
 }
 
 func newGetScoreRequest(id string) *http.Request {
-	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/player/%s", id), nil)
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/players/%s", id), nil)
 	return req
 }
 
 func newPostScoreRequest(id string) *http.Request {
-	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/player/%s", id), nil)
+	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/players/%s", id), nil)
 	return req
 }
 
