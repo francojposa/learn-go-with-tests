@@ -4,12 +4,27 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	server := &PlayerServer{NewInMemoryPlayerStore()}
-	fmt.Println("running http server on port 5000")
-	if err := http.ListenAndServe(":5000", server); err != nil {
-		log.Fatalf("could not listen on port 5000 %v", err)
+	playerHandler := &PlayerHandler{NewInMemoryPlayerStore()}
+
+	router := mux.NewRouter()
+
+	router.HandleFunc("/players/{id}", playerHandler.getPlayerScore).Methods("GET")
+	router.HandleFunc("/players/{id}", playerHandler.recordPlayerScore).Methods("POST")
+
+	srv := &http.Server{
+		Handler: router,
+		Addr:    "127.0.0.1:5000",
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
 	}
+
+	fmt.Println("running http server on port 5000")
+	log.Fatal(srv.ListenAndServe())
 }

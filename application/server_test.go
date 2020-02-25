@@ -22,7 +22,7 @@ func (s *StubPlayerStore) RecordPlayerScore(id string) int {
 }
 
 func TestRecordingWinsAndRetrievingThem(t *testing.T) {
-	server := &PlayerServer{NewInMemoryPlayerStore()}
+	server := &PlayerHandler{NewInMemoryPlayerStore()}
 	player := "1"
 
 	server.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
@@ -44,7 +44,7 @@ func TestGETPlayerScore(t *testing.T) {
 		},
 	}
 
-	server := &PlayerServer{&store}
+	server := &PlayerHandler{&store}
 
 	t.Run("returns player 1's score", func(t *testing.T) {
 		request := newGetScoreRequest("1")
@@ -76,7 +76,7 @@ func TestPOSTPlayerScore(t *testing.T) {
 	store := StubPlayerStore{
 		map[string]int{},
 	}
-	server := &PlayerServer{&store}
+	server := &PlayerHandler{&store}
 
 	t.Run("returns accepted on POST", func(t *testing.T) {
 		request := newPostScoreRequest("1")
