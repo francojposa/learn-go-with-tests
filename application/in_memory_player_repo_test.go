@@ -8,9 +8,9 @@ import (
 
 func TestGetPlayerScore(t *testing.T) {
 	repo := &InMemoryPlayerStore{
-		map[string]int{
-			"1": 20,
-			"2": 10,
+		map[string]*PlayerScore{
+			"1": &PlayerScore{"1", 20},
+			"2": &PlayerScore{"2", 10},
 		},
 		sync.RWMutex{},
 	}
@@ -28,9 +28,9 @@ func TestListPlayerScores(t *testing.T) {
 
 	t.Run("list player scores for non-empty repo", func(t *testing.T) {
 		repo := &InMemoryPlayerStore{
-			map[string]int{
-				"1": 20,
-				"2": 10,
+			map[string]*PlayerScore{
+				"1": &PlayerScore{"1", 20},
+				"2": &PlayerScore{"2", 10},
 			},
 			sync.RWMutex{},
 		}
@@ -40,6 +40,44 @@ func TestListPlayerScores(t *testing.T) {
 		}
 		playerScores := repo.ListPlayerScores()
 		assertPlayerScoreSlice(t, expectedScores, playerScores)
+	})
+
+	t.Run("list player scores for empty repo", func(t *testing.T) {
+		repo := NewInMemoryPlayerRepo()
+		expectedScores := []*PlayerScore{}
+		playerScores := repo.ListPlayerScores()
+		assertPlayerScoreSlice(t, expectedScores, playerScores)
+	})
+
+}
+
+func TestRecordPlayerScore(t *testing.T) {
+	t.Run("create first player score for nonexistent player", func(t *testing.T) {
+		repo := NewInMemoryPlayerRepo()
+		expectedPlayer1Score := &PlayerScore{"1", 1}
+		player1Score := repo.RecordPlayerScore("1")
+		assertPlayerScore(t, expectedPlayer1Score, player1Score)
+	})
+
+	t.Run("increment player score for existing player", func(t *testing.T) {
+		repo := &InMemoryPlayerStore{
+			map[string]*PlayerScore{
+				"1": &PlayerScore{"1", 20},
+				"2": &PlayerScore{"2", 10},
+			},
+			sync.RWMutex{},
+		}
+
+		expectedPlayer1Score := &PlayerScore{"1", 22}
+		player1Score := repo.RecordPlayerScore("1")
+		repo.RecordPlayerScore("1")
+
+		assertPlayerScore(t, expectedPlayer1Score, player1Score)
+
+		expectedPlayer2Score := &PlayerScore{"2", 11}
+		player2Score := repo.RecordPlayerScore("2")
+
+		assertPlayerScore(t, expectedPlayer2Score, player2Score)
 	})
 
 }
