@@ -8,12 +8,12 @@ import (
 )
 
 type PlayerScore struct {
-	PlayerId string
+	PlayerID string
 	Score    int
 }
 
 func (ps *PlayerScore) String() string {
-	return fmt.Sprintf("PlayerId: %s, Score: %d", ps.PlayerId, ps.Score)
+	return fmt.Sprintf("PlayerID: %s, Score: %d", ps.PlayerID, ps.Score)
 }
 
 type PlayerRepo interface {
