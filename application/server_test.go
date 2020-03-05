@@ -13,14 +13,14 @@ type StubPlayerRepo struct {
 	scores map[string]int
 }
 
-func (s *StubPlayerRepo) GetPlayerScore(id string) (int, bool) {
+func (s *StubPlayerRepo) GetPlayerScore(id string) (*PlayerScore, bool) {
 	score, ok := s.scores[id]
-	return score, ok
+	return &PlayerScore{id, score}, ok
 }
 
-func (s *StubPlayerRepo) RecordPlayerScore(id string) int {
+func (s *StubPlayerRepo) RecordPlayerScore(id string) *PlayerScore {
 	s.scores[id]++
-	return s.scores[id]
+	return &PlayerScore{id, s.scores[id]}
 }
 
 func SetupTestPlayerHandler(repo PlayerRepo) *mux.Router {
