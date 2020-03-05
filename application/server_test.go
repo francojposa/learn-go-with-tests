@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
 
 type StubPlayerStore struct {
@@ -21,16 +23,27 @@ func (s *StubPlayerStore) RecordPlayerScore(id string) int {
 	return s.scores[id]
 }
 
+func SetupTestPlayerHandler(store PlayerStore) *mux.Router {
+	playerHandler := &PlayerHandler{store}
+
+	router := mux.NewRouter()
+
+	router.HandleFunc("/players/{id}", playerHandler.getPlayerScore).Methods("GET")
+	router.HandleFunc("/players/{id}", playerHandler.recordPlayerScore).Methods("POST")
+
+	return router
+}
+
 func TestRecordingWinsAndRetrievingThem(t *testing.T) {
-	server := &PlayerHandler{NewInMemoryPlayerStore()}
+	playerHandler := SetupTestPlayerHandler(NewInMemoryPlayerStore())
 	player := "1"
 
-	server.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
-	server.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
-	server.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
+	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
+	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
+	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
 
 	response := httptest.NewRecorder()
-	server.ServeHTTP(response, newGetScoreRequest(player))
+	playerHandler.ServeHTTP(response, newGetScoreRequest(player))
 
 	assertResponseStatus(t, response.Code, http.StatusOK)
 	assertResponseBody(t, response.Body.String(), "3")
@@ -44,12 +57,12 @@ func TestGETPlayerScore(t *testing.T) {
 		},
 	}
 
-	server := &PlayerHandler{&store}
+	playerHandler := SetupTestPlayerHandler(&store)
 
 	t.Run("returns player 1's score", func(t *testing.T) {
 		request := newGetScoreRequest("1")
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, request)
+		playerHandler.ServeHTTP(response, request)
 
 		assertResponseStatus(t, response.Code, http.StatusOK)
 		assertResponseBody(t, response.Body.String(), "20")
@@ -58,7 +71,7 @@ func TestGETPlayerScore(t *testing.T) {
 	t.Run("return's player 2's score", func(t *testing.T) {
 		request := newGetScoreRequest("2")
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, request)
+		playerHandler.ServeHTTP(response, request)
 
 		assertResponseStatus(t, response.Code, http.StatusOK)
 		assertResponseBody(t, response.Body.String(), "10")
@@ -67,7 +80,7 @@ func TestGETPlayerScore(t *testing.T) {
 	t.Run("return 404 for player id not found", func(t *testing.T) {
 		request := newGetScoreRequest("3")
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, request)
+		playerHandler.ServeHTTP(response, request)
 		assertResponseStatus(t, http.StatusNotFound, response.Code)
 	})
 }
@@ -76,12 +89,12 @@ func TestPOSTPlayerScore(t *testing.T) {
 	store := StubPlayerStore{
 		map[string]int{},
 	}
-	server := &PlayerHandler{&store}
+	playerHandler := SetupTestPlayerHandler(&store)
 
 	t.Run("returns accepted on POST", func(t *testing.T) {
 		request := newPostScoreRequest("1")
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, request)
+		playerHandler.ServeHTTP(response, request)
 		assertResponseStatus(t, http.StatusCreated, response.Code)
 	})
 }
