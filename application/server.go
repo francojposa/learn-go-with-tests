@@ -12,14 +12,18 @@ type PlayerScore struct {
 	Score    int
 }
 
-func (ps *PlayerScore) String() string {
+func (ps PlayerScore) String() string {
 	return fmt.Sprintf("PlayerID: %s, Score: %d", ps.PlayerID, ps.Score)
 }
 
+func (ps PlayerScore) IsEmpty() bool {
+	return ps.PlayerID == ""
+}
+
 type PlayerRepo interface {
-	GetPlayerScore(id string) (*PlayerScore, bool)
+	GetPlayerScore(id string) (PlayerScore, bool)
 	//ListPlayerScores() []PlayerScore
-	RecordPlayerScore(id string) *PlayerScore
+	RecordPlayerScore(id string) PlayerScore
 }
 
 type PlayerHandler struct {
