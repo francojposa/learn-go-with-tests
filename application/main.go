@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	playerHandler := &PlayerHandler{NewInMemoryPlayerStore()}
+	playerHandler := &PlayerHandler{NewInMemoryPlayerRepo()}
 
 	router := mux.NewRouter()
 

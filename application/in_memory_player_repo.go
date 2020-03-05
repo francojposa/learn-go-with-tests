@@ -2,7 +2,7 @@ package main
 
 import "sync"
 
-func NewInMemoryPlayerStore() *InMemoryPlayerStore {
+func NewInMemoryPlayerRepo() *InMemoryPlayerStore {
 	return &InMemoryPlayerStore{
 		map[string]int{},
 		sync.RWMutex{},

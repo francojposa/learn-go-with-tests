@@ -7,13 +7,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type PlayerStore interface {
+type PlayerRepo interface {
 	GetPlayerScore(id string) (int, bool)
 	RecordPlayerScore(id string) int
 }
 
 type PlayerHandler struct {
-	store PlayerStore
+	store PlayerRepo
 }
 
 func (p *PlayerHandler) getPlayerScore(w http.ResponseWriter, r *http.Request) {

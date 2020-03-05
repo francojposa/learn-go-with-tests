@@ -9,22 +9,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type StubPlayerStore struct {
+type StubPlayerRepo struct {
 	scores map[string]int
 }
 
-func (s *StubPlayerStore) GetPlayerScore(id string) (int, bool) {
+func (s *StubPlayerRepo) GetPlayerScore(id string) (int, bool) {
 	score, ok := s.scores[id]
 	return score, ok
 }
 
-func (s *StubPlayerStore) RecordPlayerScore(id string) int {
+func (s *StubPlayerRepo) RecordPlayerScore(id string) int {
 	s.scores[id]++
 	return s.scores[id]
 }
 
-func SetupTestPlayerHandler(store PlayerStore) *mux.Router {
-	playerHandler := &PlayerHandler{store}
+func SetupTestPlayerHandler(repo PlayerRepo) *mux.Router {
+	playerHandler := &PlayerHandler{repo}
 
 	router := mux.NewRouter()
 
@@ -35,7 +35,7 @@ func SetupTestPlayerHandler(store PlayerStore) *mux.Router {
 }
 
 func TestRecordingWinsAndRetrievingThem(t *testing.T) {
-	playerHandler := SetupTestPlayerHandler(NewInMemoryPlayerStore())
+	playerHandler := SetupTestPlayerHandler(NewInMemoryPlayerRepo())
 	player := "1"
 
 	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostScoreRequest(player))
@@ -50,14 +50,14 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 }
 
 func TestGETPlayerScore(t *testing.T) {
-	store := StubPlayerStore{
+	repo := StubPlayerRepo{
 		map[string]int{
 			"1": 20,
 			"2": 10,
 		},
 	}
 
-	playerHandler := SetupTestPlayerHandler(&store)
+	playerHandler := SetupTestPlayerHandler(&repo)
 
 	t.Run("returns player 1's score", func(t *testing.T) {
 		request := newGetScoreRequest("1")
@@ -86,10 +86,10 @@ func TestGETPlayerScore(t *testing.T) {
 }
 
 func TestPOSTPlayerScore(t *testing.T) {
-	store := StubPlayerStore{
+	repo := StubPlayerRepo{
 		map[string]int{},
 	}
-	playerHandler := SetupTestPlayerHandler(&store)
+	playerHandler := SetupTestPlayerHandler(&repo)
 
 	t.Run("returns accepted on POST", func(t *testing.T) {
 		request := newPostScoreRequest("1")
