@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"reflect"
 	"sync"
 	"testing"
@@ -79,7 +80,14 @@ func TestRecordPlayerScore(t *testing.T) {
 
 		assertPlayerScore(t, expectedPlayer2Score, player2Score)
 	})
+}
 
+func BenchmarkRecordPlayerScore(b *testing.B) {
+	repo := NewInMemoryPlayerRepo()
+	for i := 0; i < b.N; i++ {
+		id := string(rand.Intn(50))
+		repo.RecordPlayerScore(id)
+	}
 }
 
 func assertPlayerScore(t *testing.T, want, got PlayerScore) {
