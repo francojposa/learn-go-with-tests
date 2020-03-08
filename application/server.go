@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -22,7 +23,7 @@ func (ps PlayerScore) IsEmpty() bool {
 
 type PlayerRepo interface {
 	GetPlayerScore(id string) (PlayerScore, bool)
-	//ListPlayerScores() []PlayerScore
+	ListPlayerScores() []PlayerScore
 	RecordPlayerScore(id string) PlayerScore
 }
 
@@ -30,7 +31,7 @@ type PlayerHandler struct {
 	store PlayerRepo
 }
 
-func (p *PlayerHandler) getPlayerScore(w http.ResponseWriter, r *http.Request) {
+func (p *PlayerHandler) GetPlayerScore(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	playerScore, ok := p.store.GetPlayerScore(id)
@@ -39,10 +40,14 @@ func (p *PlayerHandler) getPlayerScore(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprint(w, playerScore.Score)
 	}
-
 }
 
-func (p *PlayerHandler) recordPlayerScore(w http.ResponseWriter, r *http.Request) {
+func (p *PlayerHandler) ListPlayerScores(w http.ResponseWriter, r *http.Request) {
+	playerScores := p.store.ListPlayerScores()
+	json.NewEncoder(w).Encode(playerScores)
+}
+
+func (p *PlayerHandler) RecordPlayerScore(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	playerScore := p.store.RecordPlayerScore(id)

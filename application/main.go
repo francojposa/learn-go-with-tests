@@ -14,8 +14,9 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/players/{id}", playerHandler.getPlayerScore).Methods("GET")
-	router.HandleFunc("/players/{id}", playerHandler.recordPlayerScore).Methods("POST")
+	router.HandleFunc("/players/{id}", playerHandler.GetPlayerScore).Methods("GET")
+	router.HandleFunc("/players/{id}", playerHandler.RecordPlayerScore).Methods("POST")
+	router.HandleFunc("/players/", playerHandler.ListPlayerScores).Methods("GET")
 
 	srv := &http.Server{
 		Handler: router,
