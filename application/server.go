@@ -38,7 +38,7 @@ func (p *PlayerHandler) GetPlayerScore(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 	} else {
-		fmt.Fprint(w, playerScore.Score)
+		json.NewEncoder(w).Encode(playerScore)
 	}
 }
 
@@ -52,5 +52,5 @@ func (p *PlayerHandler) RecordPlayerScore(w http.ResponseWriter, r *http.Request
 	id := vars["id"]
 	playerScore := p.store.RecordPlayerScore(id)
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprint(w, playerScore.Score)
+	json.NewEncoder(w).Encode(playerScore)
 }

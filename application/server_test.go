@@ -46,17 +46,17 @@ func SetupTestPlayerHandler(repo PlayerRepo) *mux.Router {
 
 func TestPOSTAndGETPlayerScore(t *testing.T) {
 	playerHandler := SetupTestPlayerHandler(NewInMemoryPlayerRepo())
-	player := "1"
+	playerID := "1"
 
-	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostPlayerScoreRequest(player))
-	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostPlayerScoreRequest(player))
-	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostPlayerScoreRequest(player))
+	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostPlayerScoreRequest(playerID))
+	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostPlayerScoreRequest(playerID))
+	playerHandler.ServeHTTP(httptest.NewRecorder(), newPostPlayerScoreRequest(playerID))
 
 	response := httptest.NewRecorder()
-	playerHandler.ServeHTTP(response, newGetPlayerScoreRequest(player))
+	playerHandler.ServeHTTP(response, newGetPlayerScoreRequest(playerID))
 
 	assertResponseStatus(t, response.Code, http.StatusOK)
-	assertResponseBody(t, response.Body.String(), "3")
+	assertResponsePlayerScore(t, response, PlayerScore{"1", 3})
 }
 
 func TestGETPlayerScore(t *testing.T) {
@@ -75,7 +75,7 @@ func TestGETPlayerScore(t *testing.T) {
 		playerHandler.ServeHTTP(response, request)
 
 		assertResponseStatus(t, response.Code, http.StatusOK)
-		assertResponseBody(t, response.Body.String(), "20")
+		assertResponsePlayerScore(t, response, PlayerScore{"1", 20})
 	})
 
 	t.Run("return's player 2's score", func(t *testing.T) {
@@ -84,7 +84,7 @@ func TestGETPlayerScore(t *testing.T) {
 		playerHandler.ServeHTTP(response, request)
 
 		assertResponseStatus(t, response.Code, http.StatusOK)
-		assertResponseBody(t, response.Body.String(), "10")
+		assertResponsePlayerScore(t, response, PlayerScore{"2", 10})
 	})
 
 	t.Run("return 404 for player id not found", func(t *testing.T) {
@@ -115,18 +115,7 @@ func TestListPlayerScore(t *testing.T) {
 		{"2", 10},
 	}
 
-	gotPlayerScores := []PlayerScore{}
-	err := json.NewDecoder(response.Body).Decode(&gotPlayerScores)
-
-	if err != nil {
-		t.Errorf(
-			"Unable to parse response from server %q into slice of PlayerScore, '%v'",
-			response.Body,
-			err,
-		)
-	}
-
-	assertPlayerScoreSlice(t, expectedPlayerScores, gotPlayerScores)
+	assertResponsePlayerScores(t, response, expectedPlayerScores)
 }
 
 func TestPOSTPlayerScore(t *testing.T) {
@@ -165,9 +154,44 @@ func assertResponseStatus(t *testing.T, want, got int) {
 	}
 }
 
-func assertResponseBody(t *testing.T, want, got string) {
+func assertResponsePlayerScore(
+	t *testing.T,
+	response *httptest.ResponseRecorder,
+	want PlayerScore,
+) {
 	t.Helper()
-	if got != want {
-		t.Errorf("\nincorrect response body\nwant: %q, got %q", want, got)
+	gotPlayerScore := PlayerScore{}
+	err := json.NewDecoder(response.Body).Decode(&gotPlayerScore)
+
+	if err != nil {
+		t.Errorf(
+			"Unable to parse response from server %q into slice of PlayerScore, '%v'",
+			response.Body,
+			err,
+		)
 	}
+
+	assertPlayerScore(t, want, gotPlayerScore)
+
+}
+
+func assertResponsePlayerScores(
+	t *testing.T,
+	response *httptest.ResponseRecorder,
+	want []PlayerScore,
+) {
+	t.Helper()
+
+	gotPlayerScores := []PlayerScore{}
+	err := json.NewDecoder(response.Body).Decode(&gotPlayerScores)
+
+	if err != nil {
+		t.Errorf(
+			"Unable to parse response from server %q into slice of PlayerScore, '%v'",
+			response.Body,
+			err,
+		)
+	}
+
+	assertPlayerScoreSlice(t, want, gotPlayerScores)
 }
