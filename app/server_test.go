@@ -1,4 +1,4 @@
-package main
+package players
 
 import (
 	"encoding/json"
@@ -14,22 +14,22 @@ type StubPlayerRepo struct {
 	scores map[string]int
 }
 
-func (s *StubPlayerRepo) GetPlayerScore(id string) (PlayerScore, bool) {
-	score, ok := s.scores[id]
+func (r *StubPlayerRepo) GetPlayerScore(id string) (PlayerScore, bool) {
+	score, ok := r.scores[id]
 	return PlayerScore{id, score}, ok
 }
 
-func (s *StubPlayerRepo) ListPlayerScores() []PlayerScore {
+func (r *StubPlayerRepo) ListPlayerScores() []PlayerScore {
 	playerScores := []PlayerScore{}
-	for k, v := range s.scores {
+	for k, v := range r.scores {
 		playerScores = append(playerScores, PlayerScore{k, v})
 	}
 	return playerScores
 }
 
-func (s *StubPlayerRepo) RecordPlayerScore(id string) PlayerScore {
-	s.scores[id]++
-	return PlayerScore{id, s.scores[id]}
+func (r *StubPlayerRepo) RecordPlayerScore(id string) PlayerScore {
+	r.scores[id]++
+	return PlayerScore{id, r.scores[id]}
 }
 
 func SetupTestPlayerHandler(repo PlayerRepo) *mux.Router {

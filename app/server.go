@@ -1,4 +1,4 @@
-package main
+package players
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package main
+package players
 
 import (
 	"math/rand"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetPlayerScore(t *testing.T) {
-	repo := &InMemoryPlayerStore{
+	repo := &InMemoryPlayerRepo{
 		map[string]PlayerScore{
 			"1": PlayerScore{"1", 20},
 			"2": PlayerScore{"2", 10},
@@ -28,7 +28,7 @@ func TestGetPlayerScore(t *testing.T) {
 func TestListPlayerScores(t *testing.T) {
 
 	t.Run("list player scores for non-empty repo", func(t *testing.T) {
-		repo := &InMemoryPlayerStore{
+		repo := &InMemoryPlayerRepo{
 			map[string]PlayerScore{
 				"1": PlayerScore{"1", 20},
 				"2": PlayerScore{"2", 10},
@@ -61,7 +61,7 @@ func TestRecordPlayerScore(t *testing.T) {
 	})
 
 	t.Run("increment player score for existing player", func(t *testing.T) {
-		repo := &InMemoryPlayerStore{
+		repo := &InMemoryPlayerRepo{
 			map[string]PlayerScore{
 				"1": PlayerScore{"1", 20},
 				"2": PlayerScore{"2", 10},
