@@ -37,10 +37,8 @@ func (r *InMemoryPlayerRepo) ListPlayerScores() []PlayerScore {
 	sort.Strings(ids)
 
 	playerScores := make([]PlayerScore, len(r.scores))
-	i = 0
-	for _, playerScore := range r.scores {
-		playerScores[i] = playerScore
-		i++
+	for i, id := range ids {
+		playerScores[i] = r.scores[id]
 	}
 	return playerScores
 }

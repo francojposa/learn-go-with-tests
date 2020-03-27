@@ -27,14 +27,18 @@ type PlayerRepo interface {
 	RecordPlayerScore(id string) PlayerScore
 }
 
+func NewPlayerHandler(repo PlayerRepo) *PlayerHandler {
+	return &PlayerHandler{repo}
+}
+
 type PlayerHandler struct {
-	store PlayerRepo
+	repo PlayerRepo
 }
 
 func (p *PlayerHandler) GetPlayerScore(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	playerScore, ok := p.store.GetPlayerScore(id)
+	playerScore, ok := p.repo.GetPlayerScore(id)
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 	} else {
@@ -43,14 +47,14 @@ func (p *PlayerHandler) GetPlayerScore(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *PlayerHandler) ListPlayerScores(w http.ResponseWriter, r *http.Request) {
-	playerScores := p.store.ListPlayerScores()
+	playerScores := p.repo.ListPlayerScores()
 	json.NewEncoder(w).Encode(playerScores)
 }
 
 func (p *PlayerHandler) RecordPlayerScore(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	playerScore := p.store.RecordPlayerScore(id)
+	playerScore := p.repo.RecordPlayerScore(id)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(playerScore)
 }
